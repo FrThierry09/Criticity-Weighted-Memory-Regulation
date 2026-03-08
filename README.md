@@ -27,7 +27,7 @@ Memories with higher criticality remain stable in the agent’s working context,
 ## Paper
 The full proposal is available here:
 
-[Read the full proposal] (Criticity_Weighted_Memory_Regulation_V4_2_EN-FR.html)
+[Read the full proposal] (index.html)
 
 ## Status
 Conceptual research proposal open for discussion.
