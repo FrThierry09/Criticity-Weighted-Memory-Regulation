@@ -1,7 +1,7 @@
 # Criticity-Weighted Memory Regulation for Long-Running LLM Agents
 Conceptual research proposal on memory regulation for long-running LLM agents.
 
-##Architecture overview
+## Architecture overview
 
 LLM
  ↓
@@ -11,7 +11,7 @@ External Episodic Storage
  ↓
 Criticity-Weighted Memory Regulation
 
-##Live version of the proposal:
+## Live version of the proposal:
 https://frthierry09.github.io/criticty-weighted-memory-regulation/
 
 ## Overview
