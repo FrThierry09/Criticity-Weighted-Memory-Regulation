@@ -12,7 +12,8 @@ External Episodic Storage
 Criticity-Weighted Memory Regulation
 
 ## Live version of the proposal:
-https://frthierry09.github.io/criticty-weighted-memory-regulation/
+Live version of the proposal:
+https://frthierry09.github.io/Criticity-Weighted-Memory-Regulation/
 
 ## Overview
 Long-running LLM agents tend to accumulate noise, errors, and irrelevant context in memory.  
