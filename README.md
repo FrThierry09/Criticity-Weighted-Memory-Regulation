@@ -34,3 +34,5 @@ Conceptual research proposal open for discussion.
 
 ## Author
 François Thierry
+
+#AI #LLM #AgentMemory #ContinualLearning #MachineLearning #AIResearch
