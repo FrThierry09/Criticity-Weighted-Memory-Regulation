@@ -36,4 +36,5 @@ Conceptual research proposal open for discussion.
 François Thierry
 
 Keywords: LLM agents, agent memory, continual learning, memory regulation, vector database, AI architecture
+
 #AI #LLM #AgentMemory #ContinualLearning #MachineLearning #AIResearch
