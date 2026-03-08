@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio-Inspired Memory Architecture for LLMs — V4.2</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,300;0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            --ink: #1a1a2e;
+            --body: #2d2d44;
+            --muted: #6b7280;
+            --accent: #1e40af;
+            --accent-light: #3b82f6;
+            --border: #e2e8f0;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --innovation-bg: #f0f9ff;
+            --innovation-border: #0369a1;
+            --limitation-bg: #fef2f2;
+            --limitation-border: #b91c1c;
+            --context-bg: #fffbeb;
+            --context-border: #d97706;
+            --clinical-bg: #f0fdf4;
+            --clinical-border: #15803d;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+            font-size: 17px;
+            line-height: 1.78;
+            color: var(--body);
+            background: var(--bg);
+            padding: 40px 20px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .paper {
+            max-width: 860px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 2px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 8px 40px rgba(0,0,0,0.04);
+            padding: 64px 72px;
+        }
+
+        @media (max-width: 768px) {
+            .paper { padding: 32px 24px; }
+            body { font-size: 15px; padding: 16px 8px; }
+            .three-pillars { grid-template-columns: 1fr !important; }
+        }
+
+        /* ── Header ── */
+        header {
+            text-align: center;
+            padding-bottom: 36px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 40px;
+        }
+
+        .version-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75em;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 2em;
+            font-weight: 700;
+            color: var(--ink);
+            line-height: 1.25;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 1.05em;
+            color: var(--muted);
+            font-weight: 300;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        .authors {
+            font-size: 0.92em;
+            color: var(--body);
+            line-height: 1.6;
+        }
+
+        .authors strong { color: var(--ink); }
+
+        /* ── Language toggle ── */
+        .lang-bar {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .lang-bar button {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8em;
+            padding: 6px 18px;
+            margin: 0 4px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--muted);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-bar button.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .content { display: none; }
+        .content.active { display: block; }
+
+        /* ── Sections ── */
+        h2 {
+            font-size: 1.45em;
+            font-weight: 700;
+            color: var(--ink);
+            margin-top: 48px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h3 {
+            font-size: 1.15em;
+            font-weight: 600;
+            color: var(--ink);
+            margin-top: 28px;
+            margin-bottom: 12px;
+        }
+
+        p { margin-bottom: 14px; text-align: justify; }
+
+        ul, ol { margin: 12px 0 12px 24px; line-height: 1.75; }
+        li { margin-bottom: 6px; }
+
+        /* ── Abstract box ── */
+        .abstract-box {
+            background: var(--bg);
+            border-left: 4px solid var(--accent);
+            padding: 24px 28px;
+            margin: 28px 0;
+            border-radius: 0 4px 4px 0;
+            font-size: 0.98em;
+        }
+
+        /* ── Three pillars grid ── */
+        .three-pillars {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin: 28px 0;
+        }
+
+        .pillar {
+            background: linear-gradient(135deg, var(--accent) 0%, #1e3a8a 100%);
+            color: white;
+            padding: 22px;
+            border-radius: 6px;
+        }
+
+        .pillar h4 {
+            font-size: 1em;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.25);
+            font-weight: 600;
+        }
+
+        .pillar p { font-size: 0.9em; line-height: 1.55; text-align: left; color: rgba(255,255,255,0.92); }
+
+        /* ── Diagram ── */
+        .diagram {
+            background: var(--bg);
+            padding: 20px 24px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            line-height: 1.5;
+            overflow-x: auto;
+            margin: 16px 0;
+            border: 1px solid var(--border);
+            color: var(--ink);
+            white-space: pre;
+        }
+
+        .fig-caption {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.88em;
+            font-style: italic;
+            margin-top: 8px;
+        }
+
+        /* ── Math blocks ── */
+        .math-block {
+            background: var(--bg);
+            padding: 16px 20px;
+            border-radius: 4px;
+            margin: 14px 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88em;
+            border-left: 3px solid var(--accent-light);
+        }
+
+        .math-label {
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 6px;
+            font-size: 0.9em;
+        }
+
+        /* ── Colored boxes ── */
+        .box-innovation {
+            margin: 22px 0;
+            padding: 20px 24px;
+            border-left: 4px solid var(--innovation-border);
+            background: var(--innovation-bg);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .box-innovation h4 { color: var(--innovation-border); font-weight: 600; margin-bottom: 10px; }
+
+        .box-limitation {
+            margin: 16px 0;
+            padding: 16px 20px;
+            border-left: 4px solid var(--limitation-border);
+            background: var(--limitation-bg);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .box-limitation h4 { color: var(--limitation-border); font-weight: 600; margin-bottom: 8px; font-size: 0.95em; }
+        .box-limitation p { font-size: 0.94em; }
+
+        .box-context {
+            background: var(--context-bg);
+            padding: 20px 24px;
+            border-radius: 0 4px 4px 0;
+            margin: 24px 0;
+            border-left: 4px solid var(--context-border);
+        }
+
+        .box-clinical {
+            background: var(--clinical-bg);
+            padding: 16px 20px;
+            border-radius: 0 4px 4px 0;
+            margin: 16px 0;
+            border-left: 4px solid var(--clinical-border);
+            font-size: 0.94em;
+            font-style: italic;
+        }
+
+        .box-clinical strong { font-style: normal; }
+
+        /* ── Tags ── */
+        .tag-inference {
+            color: #c2410c;
+            font-weight: 600;
+            font-size: 0.88em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .tag-hypothesis {
+            color: #7c3aed;
+            font-weight: 600;
+            font-size: 0.88em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .keyword {
+            display: inline;
+            background: #dbeafe;
+            color: var(--accent);
+            padding: 1px 6px;
+            border-radius: 2px;
+            font-size: 0.92em;
+            font-weight: 500;
+        }
+
+        /* ── References ── */
+        .references {
+            font-size: 0.85em;
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        .references p {
+            margin-bottom: 5px;
+            padding-left: 28px;
+            text-indent: -28px;
+            text-align: left;
+        }
+
+        .references a { color: var(--accent-light); word-break: break-all; }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center;
+            padding-top: 28px;
+            margin-top: 48px;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.82em;
+            line-height: 1.6;
+        }
+
+        /* ── Print ── */
+        @media print {
+            body { background: white; padding: 0; font-size: 10.5pt; }
+            .paper { box-shadow: none; padding: 0; }
+            .lang-bar { display: none; }
+            .content { display: block !important; }
+            .pillar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="paper">
+    <header>
+        <div class="version-tag">Position Paper — Version 4.2 — Mars 2026</div>
+        <h1>Architecture Mémorielle Bio-Inspirée<br>pour l'Apprentissage Continu des LLM</h1>
+        <div class="subtitle">Séparation, Distillation, Métabolisme</div>
+        <div class="authors">
+            <strong>François</strong> — Chirurgien-dentiste, Independent Contributor<br>
+            En collaboration avec Claude (Anthropic), Gemini (Google DeepMind), Grok (xAI) &amp; ChatGPT (OpenAI)<br>
+            <em>Recherche exploratoire issue de conversations humain-IA</em>
+        </div>
+    </header>
+
+    <div class="lang-bar">
+        <button class="active" onclick="switchLang('fr')">Français</button>
+        <button onclick="switchLang('en')">English</button>
+    </div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- VERSION FRANÇAISE                       -->
+<!-- ═══════════════════════════════════════ -->
+<div class="content active" id="fr">
+
+    <div class="abstract-box">
+        <strong>Résumé.</strong> Cette note de position propose une architecture de mémoire hybride pour les grands modèles de langage (LLM), articulée autour de trois contributions : (1) une <strong>séparation index latent / stockage externe souverain</strong>, (2) une <strong>distillation sélective</strong> qui préserve les leçons abstraites en oubliant les données privées, et (3) un <strong>métabolisme d'élimination actif</strong> pondéré par criticité et corroboration multi-sources. L'architecture s'appuie sur des briques technologiques existantes (Mem0, SAE/DLM-Scope, Mercury 2, SYNAPSE) et adresse trois lacunes majeures des LLM : absence d'apprentissage continu, accumulation vectorielle non régulée, et tension privacité–généralisation. Les analogies biologiques servent de guide heuristique architectural, non de validation mécaniste.
+    </div>
+
+    <!-- MOTIVATION -->
+    <h2>1. Motivation : pourquoi ce problème importe</h2>
+
+    <p>Les LLM actuels ne retiennent rien entre les sessions. Chaque conversation repart de zéro — un gaspillage computationnel considérable, puisque les mêmes raisonnements doivent être reproduits indéfiniment. Ce problème est couplé à trois défis identifiés dans la littérature récente :</p>
+    <ul>
+        <li><strong>Oubli catastrophique</strong> — l'intégration de nouvelles connaissances dégrade les anciennes [1].</li>
+        <li><strong>Accumulation vectorielle toxique</strong> — le contexte grandit sans régulation ; les systèmes à mémoire longue (agents) accumulent du bruit qui amplifie les hallucinations.</li>
+        <li><strong>Tension privacité–généralisation</strong> — GDPR et souveraineté des données vs. besoin d'apprendre de chaque interaction.</li>
+    </ul>
+
+    <div class="box-clinical">
+        <strong>Analogie clinique.</strong> Un praticien oublie les détails de chaque consultation passée, mais retient les leçons diagnostiques. Il ne confond pas « se souvenir du patient » avec « avoir appris du cas ». C'est exactement cette séparation que nous proposons pour les LLM.
+    </div>
+
+    <!-- TROIS PILIERS -->
+    <h2>2. Trois contributions</h2>
+
+    <div class="three-pillars">
+        <div class="pillar">
+            <h4>1 · Séparation Index / Stockage</h4>
+            <p>Graines internes comprimées (vecteurs légers) pour récupération O(log N). Stockage externe indépendant pour traces complètes. L'utilisateur contrôle ses données.</p>
+        </div>
+        <div class="pillar">
+            <h4>2 · Distillation Sélective</h4>
+            <p>Les données privées s'oublient après consolidation offline. Les leçons abstraites (patterns, règles) sont conservées et intégrées via réentraînement doux (LoRA, continual RL).</p>
+        </div>
+        <div class="pillar">
+            <h4>3 · Métabolisme d'Élimination</h4>
+            <p>Purge active par criticité (signal/bruit), corroboration (accord multi-sources) et consolidation offline. Prévient l'intoxication vectorielle des agents long-horizon.</p>
+        </div>
+    </div>
+
+    <p>Ces trois mécanismes ne sont pas indépendants : la séparation index/stockage <em>permet</em> la distillation sélective (on ne peut distiller que ce qu'on a séparé), et le métabolisme <em>régule</em> les deux (en éliminant les graines et traces devenues obsolètes).</p>
+
+    <!-- ARCHITECTURE -->
+    <h2>3. Architecture proposée</h2>
+
+    <h3>3.1 Structure en trois couches</h3>
+    <div class="diagram">┌──────────────────────────────────────────────────┐
+│  LLM (embedding + forward pass)                  │
+│  Projection de requête → graine latente (seed)   │
+└──────────────┬───────────────────────────────────┘
+               │
+       ┌───────▼──────────┐
+       │  L1: Index Local  │  Graines comprimées (latent seeds)
+       │  - Divergence     │  Récupération rapide O(log N)
+       │  - Saillance      │  Métadonnées criticité + surprise
+       └───────┬──────────┘
+               │
+       ┌───────▼──────────────────┐
+       │  L2: Stockage Externe    │  Mémoire épisodique persistante
+       │  - Vectorstore (Milvus)  │  Souveraineté utilisateur
+       │  - Métadonnées tempo.    │  Traces complètes
+       └───────┬──────────────────┘
+               │
+       ┌───────▼──────────────────┐
+       │  L3: Métabolisme Actif   │  Purge pondérée par criticité
+       │  - Distillation offline  │  Consolidation abstraite
+       │  - Régulation saillance  │  Anti-sur-correction
+       └──────────────────────────┘</div>
+    <p class="fig-caption"><strong>Figure 1.</strong> Architecture à trois couches avec boucles de régulation. L1 ne modifie pas les poids du modèle — il opère sur un index externe.</p>
+
+    <h3>3.2 Séparation Index / Contenu (L1 ↔ L2)</h3>
+    <p>L'index interne ne stocke que des graines comprimées : vecteurs légers (~100–300 dimensions) accompagnés de métadonnées de saillance, criticité et provenance. Le stockage externe conserve les traces complètes et reste indépendant du modèle. Cette séparation a trois conséquences :</p>
+    <ul>
+        <li><strong>Économie radicale</strong> — rapport de compression graine/document pouvant atteindre 100:1, réduisant le coût de stockage GPU.</li>
+        <li><strong>Passage à l'échelle</strong> — l'index reste borné tandis que le stockage externe croît sur supports bon marché.</li>
+        <li><strong>Souveraineté</strong> — les données sensibles restent sur l'infrastructure de l'utilisateur ; le modèle ne possède que des pointeurs anonymisés.</li>
+    </ul>
+
+    <h3>3.2.1 Protocole de reprise de session (session handshake)</h3>
+    <p>La séparation index/stockage pose un problème pratique : à la réouverture d'une session, le modèle doit retrouver l'état pertinent de la mémoire externe sans scanner l'intégralité du stockage. Nous proposons un <strong>snapshot d'état contextuel</strong> généré automatiquement à la fermeture de chaque session.</p>
+    <p>Ce snapshot est un vecteur compact qui encode la topologie courante de l'index : graines actives, graines en quarantaine, score de criticité moyen, derniers patterns distillés, et pointeurs vers les clusters externes les plus récemment sollicités. À la réouverture, ce vecteur sert de requête initiale pour pré-charger (prefetch) les données externes pertinentes <em>avant même que l'utilisateur ne pose sa première question</em>.</p>
+
+    <div class="math-block">
+        <div class="math-label">Snapshot de session :</div>
+        <code>S_t = encode(graines_actives, quarantaine, criticité_moy, clusters_récents)</code>
+    </div>
+    <div class="math-block">
+        <div class="math-label">Reprise :</div>
+        <code>prefetch(L2, top_k(cos_sim(S_t, index_L2))) → cache local prêt</code>
+    </div>
+
+    <div class="box-clinical">
+        <strong>Analogie clinique.</strong> Au réveil, un praticien ne re-parcourt pas l'intégralité de ses dossiers patients pour savoir où il en est. Son cerveau dispose d'un état consolidé — un checkpoint — qui le remet immédiatement dans son contexte professionnel. Le snapshot de session joue exactement ce rôle pour le LLM.
+    </div>
+
+    <p><span class="tag-inference">[Inférence]</span> Ce mécanisme résout le problème de latence du stockage externe identifié dans les versions précédentes : le coût de la première requête passe de O(N) (scan complet) à O(k) (prefetch ciblé), rendant la mémoire distribuée viable en temps réel.</p>
+
+    <h3>3.3 Distillation Sélective (consolidation offline)</h3>
+    <p>Périodiquement (offline), un processus d'extraction s'exécute : quelles leçons abstraites extraire des interactions récentes ? Le contenu privé (données utilisateur brutes) est purgé après distillation ; les règles généralisées, insights et patterns sont intégrés via réentraînement doux (soft LoRA, continual RL).</p>
+    <p><span class="tag-inference">[Inférence]</span> Ce mécanisme transforme une limitation actuelle des LLM — l'oubli entre sessions — en <em>fonctionnalité</em> : le système apprend sans retenir les données personnelles. L'épisode s'efface, le savoir reste.</p>
+
+    <div class="box-clinical">
+        <strong>Analogie clinique.</strong> Un chirurgien-dentiste oublie les détails de la consultation du 15 mars, mais retient qu'un certain profil de patient réagit mal à tel anesthésique. C'est la distillation en pratique : l'épisode privé s'efface, la leçon clinique persiste.
+    </div>
+
+    <h3>3.4 Métabolisme d'élimination actif (L3)</h3>
+    <p>Plutôt que FIFO (ancienneté) ou LRU (récence), nous proposons une purge pondérée par criticité. Une trace ancienne mais critique (règle de calcul validée) est conservée ; une trace récente mais marginale est oubliée.</p>
+
+    <div class="math-block">
+        <div class="math-label">Priorité de conservation :</div>
+        <code>p = f(divergence, surprise, criticité, corroboration)</code>
+    </div>
+    <div class="math-block">
+        <div class="math-label">Divergence vectorielle :</div>
+        <code>divergence = 1 − cos_sim(trace, index_moyen)</code>
+    </div>
+    <div class="math-block">
+        <div class="math-label">Fidélité sémantique (DLM-Scope) :</div>
+        <code>fidélité = α · EV_norm − β · ΔL_norm</code>
+    </div>
+    <div class="math-block">
+        <div class="math-label">Contrainte énergétique dynamique :</div>
+        <code>révision si : gain_information > coût_calcul</code>
+    </div>
+    <div class="math-block">
+        <div class="math-label">Probabilité de purge (garbage collection) :</div>
+        <code>P_purge(i) = temps_inactivité / (criticité(i) × N_corroborations)</code>
+    </div>
+
+    <p>Le nettoyage n'est jamais exécuté en temps réel. Il se déclenche lors des périodes de faible sollicitation (consolidation offline), pendant lesquelles le système réorganise son index, purge les vecteurs orphelins, et coupe les liens sémantiques très faibles (downscaling synaptique) pour augmenter le rapport signal/bruit.</p>
+
+    <div class="box-clinical">
+        <strong>Analogie biologique — Système glymphatique.</strong> Découvert par Nedergaard en 2012 [21], le système glymphatique permet l'évacuation des déchets neurotoxiques — notamment la protéine bêta-amyloïde — principalement pendant le sommeil profond à ondes lentes. Une altération de ce nettoyage (apnées du sommeil, micro-éveils) entraîne une accumulation toxique associée à la maladie d'Alzheimer. De la même manière, un modèle privé de cycles offline de nettoyage par un flux de requêtes ininterrompu s'intoxiquera sous le poids de ses propres redondances vectorielles. La purge pondérée par criticité est l'équivalent computationnel de la clairance glymphatique : les données triviales sont évacuées, les données critiques sont immunisées.
+    </div>
+
+    <h3>3.5 Régulation métacognitive</h3>
+    <p>Un mécanisme de feedback inhibiteur prévient la sur-correction sur un mauvais exemple récent. Avant tout ajustement, le système vérifie la corroboration (accord multi-sources, cohérence avec le prior bayésien) et attend la consolidation offline (validation croisée ou approbation humaine).</p>
+    <p><span class="tag-inference">[Inférence]</span> Ce régulateur empêche qu'un souvenir trop saillant — un outlier statistique, un cas exceptionnel — ne déforme le comportement général. Les émotions humaines renforcent la mémoire mais peuvent la déformer ; la saillance computationnelle présente le même risque [19].</p>
+
+    <div class="box-clinical">
+        <strong>Analogie clinique.</strong> L'exemple de <em>H. pylori</em> — hypothèse rejetée pendant des années, puis validée par un Nobel — illustre pourquoi la quarantaine pondérée est préférable au rejet définitif. Un bon praticien ne rejette jamais définitivement un diagnostic différentiel improbable.
+    </div>
+
+    <!-- APPRENTISSAGE SOCIAL -->
+    <h3>3.6 Calibration sociale (mécanisme transversal)</h3>
+    <p>Un système qui apprend en isolation finit par dériver. Nous proposons un mécanisme de calibration périodique contre un consensus externe : benchmarks publics, oracles spécialisés, ou confrontation entre instances du même modèle sur des tâches de vérification.</p>
+    <p><span class="tag-hypothesis">[Hypothèse]</span> Cet apprentissage « social » est analogue à la formation continue des praticiens médicaux : on ne progresse pas seul, on se calibre continuellement contre les pairs et les standards de la profession. Aucun système de mémoire isolé ne peut garantir sa propre fiabilité sans ancrage externe [3].</p>
+
+    <!-- ALIGNEMENT -->
+    <h2>4. Alignement avec l'état de l'art (2025–2026)</h2>
+
+    <div class="box-context">
+        <p><strong>Continual Learning :</strong> Kirkpatrick et al. [1] ont posé le problème de l'oubli catastrophique avec EWC. Les approches récentes (Nested Learning [14], Titans/MAC) adressent ce défi. Notre métabolisme d'élimination y ajoute une régulation énergétique explicite.</p>
+        <p><strong>Memory for Agents :</strong> Mem0 [18], Zep, LangMem reconnaissent que les agents ont besoin d'une mémoire persistante stratifiée. Notre séparation index/stockage + distillation y apporte une couche d'économie et de privacité.</p>
+        <p><strong>Sparse Inference :</strong> DeepSeek-MoE [12], test-time scaling. Notre notion de criticité et de budget dynamique s'aligne sur cette quête d'efficacité énergétique.</p>
+        <p><strong>Self-Correction :</strong> Huang et al. [3] ont montré les limites de l'auto-correction sans feedback externe ; SCoRe [9] utilise le RL pour contourner le problème. Notre architecture intègre un ancrage externe obligatoire.</p>
+        <p><strong>Briques disponibles (mars 2026) :</strong> Milvus (vectorstore), Mercury 2 [10] (diffusion linguistique &lt;1s), SAE/DLM-Scope (fidélité sémantique), SuRe [15] (score de surprise), SYNAPSE [16] (spreading activation).</p>
+    </div>
+
+    <!-- LIMITATIONS -->
+    <h2>5. Limitations et questions ouvertes</h2>
+
+    <div class="box-limitation">
+        <h4>Gouvernance des seuils</h4>
+        <p>Qui décide qu'une étude peer-reviewed pèse plus qu'un témoignage utilisateur ? Comment gérer les désaccords scientifiques contemporains ? Les cadres éthiques d'arbitrage de la corroboration restent à définir.</p>
+    </div>
+
+    <div class="box-limitation">
+        <h4>Coût de la régulation</h4>
+        <p>L'extraction de patterns offline, le calcul de criticité et la reconstruction par diffusion impliquent un coût non nul. La rentabilité vs. une mémoire non régulée reste à valider empiriquement.</p>
+    </div>
+
+    <div class="box-limitation">
+        <h4>Fidélité de la reconstruction</h4>
+        <p>Mercury 2 et les SAE sont prometteurs, mais la reconstruction de traces épisodiques compressées à haute fidélité sémantique reste à démontrer à grande échelle. <span class="tag-hypothesis">[Hypothèse]</span></p>
+    </div>
+
+    <div class="box-limitation">
+        <h4>Sécurité du stockage distribué</h4>
+        <p>Externaliser la mémoire sur l'infrastructure utilisateur introduit des risques d'intégrité (corruption, injection). Les mécanismes de watermarking et de vérification de provenance [8] sont nécessaires mais insuffisamment testés en production.</p>
+    </div>
+
+    <!-- IMPACT -->
+    <h2>6. Potentiel d'impact</h2>
+    <p>Si validée, cette architecture adresserait trois directions actives en 2026 :</p>
+    <ul>
+        <li><strong>Continual Learning</strong> — apprentissage online sans oubli catastrophique.</li>
+        <li><strong>Privacy-Preserving Agents</strong> — apprendre de l'utilisateur en oubliant ses données privées.</li>
+        <li><strong>Energy-Efficient LLMs</strong> — mémoire régulée = moins d'hallucination = moins de tokens inutiles.</li>
+    </ul>
+    <p>Le point le plus original : le <strong>métabolisme d'élimination pondéré par criticité</strong>. Ce problème — l'accumulation vectorielle toxique dans les agents long-horizon — est réel et peu exploré.</p>
+
+    <!-- CONCLUSION -->
+    <h2>7. Conclusion</h2>
+    <p>Cette architecture n'est pas une invention ex nihilo mais une <strong>synthèse pragmatique</strong> de briques technologiques 2025–2026, organisée autour d'une intuition centrale : <em>un système intelligent doit gérer sa mémoire comme un organisme vivant sous contrainte énergétique</em>. On ne gagne pas au début — on apprend à gagner. Et pour apprendre, il faut savoir oublier ce qui encombre, retenir ce qui instruit, et se calibrer continuellement contre la réalité externe.</p>
+    <p>L'ambition n'est pas de résoudre tous ces problèmes, mais de montrer qu'ils sont couplés et qu'une architecture intégrée — séparation, distillation, métabolisme — est plus prometteuse que des solutions isolées.</p>
+
+    <!-- RÉFÉRENCES -->
+    <h2>Références</h2>
+    <div class="references">
+        <p>[1] Kirkpatrick et al. — « Overcoming catastrophic forgetting in neural networks », PNAS, 2017. <a href="https://www.pnas.org/doi/10.1073/pnas.1611835114">pnas.org</a></p>
+        <p>[2] Shumailov et al. — « AI models collapse when trained on recursively generated data », Nature, 2024.</p>
+        <p>[3] Huang et al. — « Large Language Models Cannot Self-Correct Reasoning Yet », ICLR, 2024.</p>
+        <p>[4] Skierś et al. — « Joint Diffusion Models in Continual Learning (JDCL) », ICCV, 2025. <a href="https://arxiv.org/abs/2411.08224">arxiv.org</a></p>
+        <p>[5] Masip et al. — « Continual Learning of Diffusion Models with Generative Distillation », CoLLAs, 2025. <a href="https://proceedings.mlr.press/v274/masip25a.html">mlr.press</a></p>
+        <p>[6] Van de Ven et al. — « GUIDE: Guidance-based Incremental Learning with Diffusion Models », 2024. <a href="https://arxiv.org/abs/2403.03938">arxiv.org</a></p>
+        <p>[7] Latent Replay pour modèles de diffusion, 2025. <a href="https://arxiv.org/abs/2509.10529">arxiv.org</a></p>
+        <p>[8] UC San Diego — Watermarking et prévention du model collapse, AI Safety 2025.</p>
+        <p>[9] Kumar et al. — « Training LLMs to Self-Correct via Reinforcement Learning (SCoRe) », Google DeepMind, 2024. <a href="https://arxiv.org/abs/2409.12917">arxiv.org</a></p>
+        <p>[10] Inception Labs — « Mercury 2 », 2026. <a href="https://www.inceptionlabs.ai/blog/introducing-mercury-2">inceptionlabs.ai</a></p>
+        <p>[11] DeepSeek AI — « DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via RL », 2025.</p>
+        <p>[12] DeepSeek AI — « mHC: Manifold-Constrained Hyper-Connections », 2026.</p>
+        <p>[13] Schmidt, E. — Témoignage devant le House Committee on Energy and Commerce, 2025.</p>
+        <p>[14] Google — Nested Learning, NeurIPS 2025.</p>
+        <p>[15] SuRe — Surprise-driven Replay, NeurIPS 2025.</p>
+        <p>[16] SYNAPSE — Spreading Activation for LLM Memory, Jan. 2026.</p>
+        <p>[17] DLM-Scope — Semantic fidelity metrics via SAE (Explained Variance + Delta Loss).</p>
+        <p>[18] Chhikara et al. — « Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory », arXiv, avr. 2025. <a href="https://arxiv.org/abs/2504.19413">arxiv.org</a></p>
+        <p>[19] McGaugh, J.L. — « The amygdala modulates the consolidation of memories of emotionally arousing experiences », Annual Review of Neuroscience, 2004.</p>
+        <p>[20] Kahneman, D. — « Thinking, Fast and Slow », 2011. Architecture Système 1 / Système 2.</p>
+        <p>[21] Iliff et al. / Nedergaard, M. — « A Paravascular Pathway Facilitates CSF Flow Through the Brain Parenchyma (Système Glymphatique) », Science Translational Medicine, 2012.</p>
+    </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- ENGLISH VERSION                         -->
+<!-- ═══════════════════════════════════════ -->
+<div class="content" id="en">
+
+    <div class="abstract-box">
+        <strong>Abstract.</strong> This position paper proposes a hybrid memory architecture for large language models (LLMs), organized around three contributions: (1) a <strong>latent index / sovereign external storage separation</strong>, (2) <strong>selective distillation</strong> that preserves abstract lessons while forgetting private data, and (3) an <strong>active elimination metabolism</strong> weighted by criticality and multi-source corroboration. The architecture builds on existing technological building blocks (Mem0, SAE/DLM-Scope, Mercury 2, SYNAPSE) and addresses three major LLM gaps: absence of true continual learning, unregulated vector accumulation, and the privacy–generalization tension. Biological analogies serve as heuristic architectural guides, not mechanistic validation.
+    </div>
+
+    <!-- MOTIVATION -->
+    <h2>1. Motivation: why this problem matters</h2>
+
+    <p>Current LLMs retain nothing between sessions. Every conversation starts from scratch — a considerable computational waste, as the same reasoning must be reproduced indefinitely. This problem is coupled with three challenges identified in recent literature:</p>
+    <ul>
+        <li><strong>Catastrophic forgetting</strong> — integrating new knowledge degrades existing knowledge [1].</li>
+        <li><strong>Toxic vector accumulation</strong> — context grows without regulation; long-memory systems (agents) accumulate noise that amplifies hallucinations.</li>
+        <li><strong>Privacy–generalization tension</strong> — GDPR and data sovereignty vs. the need to learn from every user interaction.</li>
+    </ul>
+
+    <div class="box-clinical">
+        <strong>Clinical analogy.</strong> A practitioner forgets the details of each past consultation but retains the diagnostic lessons. They do not confuse "remembering the patient" with "having learned from the case." This is precisely the separation we propose for LLMs.
+    </div>
+
+    <!-- THREE PILLARS -->
+    <h2>2. Three contributions</h2>
+
+    <div class="three-pillars">
+        <div class="pillar">
+            <h4>1 · Index / Storage Separation</h4>
+            <p>Compressed internal seeds (lightweight vectors) for O(log N) retrieval. Independent external storage for complete traces. Users control their data.</p>
+        </div>
+        <div class="pillar">
+            <h4>2 · Selective Distillation</h4>
+            <p>Private data is forgotten after offline consolidation. Abstract lessons (patterns, rules) are preserved and integrated via soft fine-tuning (LoRA, continual RL).</p>
+        </div>
+        <div class="pillar">
+            <h4>3 · Elimination Metabolism</h4>
+            <p>Active purge weighted by criticality (signal/noise), corroboration (multi-source agreement), and offline consolidation. Prevents vector poisoning in long-horizon agents.</p>
+        </div>
+    </div>
+
+    <p>These three mechanisms are interdependent: index/storage separation <em>enables</em> selective distillation (one can only distill what has been separated), and the metabolism <em>regulates</em> both (by eliminating obsolete seeds and traces).</p>
+
+    <!-- ARCHITECTURE -->
+    <h2>3. Proposed architecture</h2>
+
+    <h3>3.1 Three-layer structure</h3>
+    <div class="diagram">┌──────────────────────────────────────────────────┐
+│  LLM (embedding + forward pass)                  │
+│  Query projection → latent seed                  │
+└──────────────┬───────────────────────────────────┘
+               │
+       ┌───────▼──────────┐
+       │  L1: Local Index  │  Compressed seeds (latent vectors)
+       │  - Divergence     │  Fast retrieval O(log N)
+       │  - Salience       │  Criticality + surprise metadata
+       └───────┬──────────┘
+               │
+       ┌───────▼──────────────────┐
+       │  L2: External Storage    │  Persistent episodic memory
+       │  - Vectorstore (Milvus)  │  User sovereignty
+       │  - Temporal metadata     │  Complete traces
+       └───────┬──────────────────┘
+               │
+       ┌───────▼──────────────────┐
+       │  L3: Active Metabolism   │  Criticality-weighted purge
+       │  - Offline distillation  │  Abstract consolidation
+       │  - Salience regulation   │  Anti-over-correction
+       └──────────────────────────┘</div>
+    <p class="fig-caption"><strong>Figure 1.</strong> Three-layer architecture with regulation feedback loops. L1 does not modify model weights — it operates on an external index.</p>
+
+    <h3>3.2 Index / Content separation (L1 ↔ L2)</h3>
+    <p>The internal index only stores compressed seeds: lightweight vectors (~100–300 dimensions) with salience, criticality, and provenance metadata. External storage holds complete traces and remains model-independent. This separation yields three consequences:</p>
+    <ul>
+        <li><strong>Radical economy</strong> — seed/document compression ratio up to 100:1, reducing GPU storage cost.</li>
+        <li><strong>Scalability</strong> — the index stays bounded while external storage grows on cheap media.</li>
+        <li><strong>Sovereignty</strong> — sensitive data stays on user infrastructure; the model holds only anonymized pointers.</li>
+    </ul>
+
+    <h3>3.2.1 Session handshake protocol</h3>
+    <p>The index/storage separation raises a practical question: upon session reopening, the model must recover the relevant state of external memory without scanning all of storage. We propose an <strong>automatic contextual state snapshot</strong> generated at the close of each session.</p>
+    <p>This snapshot is a compact vector encoding the current index topology: active seeds, quarantined seeds, mean criticality score, latest distilled patterns, and pointers to the most recently queried external clusters. Upon reopening, this vector serves as an initial query to prefetch relevant external data <em>before the user even asks their first question</em>.</p>
+
+    <div class="math-block">
+        <div class="math-label">Session snapshot:</div>
+        <code>S_t = encode(active_seeds, quarantine, mean_criticality, recent_clusters)</code>
+    </div>
+    <div class="math-block">
+        <div class="math-label">Resumption:</div>
+        <code>prefetch(L2, top_k(cos_sim(S_t, L2_index))) → local cache ready</code>
+    </div>
+
+    <div class="box-clinical">
+        <strong>Clinical analogy.</strong> Upon waking, a practitioner does not re-read all patient files to know where they stand. Their brain has a consolidated state — a checkpoint — that immediately restores professional context. The session snapshot plays exactly this role for the LLM.
+    </div>
+
+    <p><span class="tag-inference">[Inference]</span> This mechanism solves the external storage latency problem identified in previous versions: first-query cost drops from O(N) (full scan) to O(k) (targeted prefetch), making distributed memory viable in real time.</p>
+
+    <h3>3.3 Selective Distillation (offline consolidation)</h3>
+    <p>Periodically (offline), an extraction process runs: what abstract lessons to draw from recent interactions? Raw private data is purged after distillation; generalized rules, insights, and patterns are integrated via soft fine-tuning (soft LoRA, continual RL).</p>
+    <p><span class="tag-inference">[Inference]</span> This mechanism transforms a current LLM limitation — forgetting between sessions — into a <em>feature</em>: the system learns without retaining personal data. The episode fades, the knowledge remains.</p>
+
+    <div class="box-clinical">
+        <strong>Clinical analogy.</strong> A dental surgeon forgets the details of the March 15th consultation but retains that a certain patient profile reacts poorly to a given anesthetic. Distillation in practice: the private episode fades, the clinical lesson persists.
+    </div>
+
+    <h3>3.4 Active elimination metabolism (L3)</h3>
+    <p>Rather than FIFO (age-based) or LRU (recency-based), we propose criticality-weighted purging. An old but critical trace (validated calculation rule) is preserved; a recent but marginal trace is forgotten.</p>
+
+    <div class="math-block">
+        <div class="math-label">Conservation priority:</div>
+        <code>p = f(divergence, surprise, criticality, corroboration)</code>
+    </div>
+    <div class="math-block">
+        <div class="math-label">Vector divergence:</div>
+        <code>divergence = 1 − cos_sim(trace, mean_index)</code>
+    </div>
+    <div class="math-block">
+        <div class="math-label">Semantic fidelity (DLM-Scope):</div>
+        <code>fidelity = α · EV_norm − β · ΔL_norm</code>
+    </div>
+    <div class="math-block">
+        <div class="math-label">Dynamic energy constraint:</div>
+        <code>revise if: information_gain > computation_cost</code>
+    </div>
+    <div class="math-block">
+        <div class="math-label">Purge probability (garbage collection):</div>
+        <code>P_purge(i) = inactivity_time / (criticality(i) × N_corroborations)</code>
+    </div>
+
+    <p>Cleanup never runs in real time. It triggers during low-demand periods (offline consolidation), during which the system reorganizes its index, purges orphaned vectors, and severs very weak semantic links (synaptic downscaling) to increase the signal-to-noise ratio.</p>
+
+    <div class="box-clinical">
+        <strong>Biological analogy — Glymphatic system.</strong> Discovered by Nedergaard in 2012 [21], the glymphatic system enables evacuation of neurotoxic waste — notably beta-amyloid protein — primarily during deep slow-wave sleep. Impaired cleanup (sleep apnea, micro-arousals) leads to toxic accumulation associated with Alzheimer's disease. Similarly, a model deprived of offline cleanup cycles by uninterrupted query streams will become poisoned under the weight of its own vectorial redundancies. Criticality-weighted purging is the computational equivalent of glymphatic clearance: trivial data is evacuated, critical data is immune.
+    </div>
+
+    <h3>3.5 Metacognitive regulation</h3>
+    <p>An inhibitory feedback mechanism prevents over-correction on a bad recent example. Before any adjustment, the system checks corroboration (multi-source agreement, Bayesian prior coherence) and awaits offline consolidation (cross-validation or human approval).</p>
+    <p><span class="tag-inference">[Inference]</span> This regulator prevents an overly salient memory — a statistical outlier, an exceptional case — from distorting general behavior. Human emotions strengthen memory but can distort it; computational salience carries the same risk [19].</p>
+
+    <div class="box-clinical">
+        <strong>Clinical analogy.</strong> The <em>H. pylori</em> example — a hypothesis rejected for years, then validated by a Nobel Prize — illustrates why weighted quarantine is preferable to definitive rejection. A good practitioner never permanently discards an unlikely differential diagnosis.
+    </div>
+
+    <!-- SOCIAL CALIBRATION -->
+    <h3>3.6 Social calibration (cross-cutting mechanism)</h3>
+    <p>A system that learns in isolation eventually drifts. We propose periodic calibration against external consensus: public benchmarks, specialized oracles, or cross-instance confrontation on verification tasks.</p>
+    <p><span class="tag-hypothesis">[Hypothesis]</span> This "social" learning mirrors continuing medical education: practitioners do not progress alone — they continuously calibrate against peers and professional standards. No isolated memory system can guarantee its own reliability without external anchoring [3].</p>
+
+    <!-- STATE OF THE ART -->
+    <h2>4. Alignment with the state of the art (2025–2026)</h2>
+
+    <div class="box-context">
+        <p><strong>Continual Learning:</strong> Kirkpatrick et al. [1] established the catastrophic forgetting problem with EWC. Recent approaches (Nested Learning [14], Titans/MAC) address this challenge. Our elimination metabolism adds explicit energy regulation.</p>
+        <p><strong>Memory for Agents:</strong> Mem0 [18], Zep, LangMem acknowledge that agents need stratified persistent memory. Our index/storage separation + distillation adds an economy and privacy layer.</p>
+        <p><strong>Sparse Inference:</strong> DeepSeek-MoE [12], test-time scaling. Our criticality and dynamic budget concepts align with this energy efficiency pursuit.</p>
+        <p><strong>Self-Correction:</strong> Huang et al. [3] showed the limits of self-correction without external feedback; SCoRe [9] uses RL to circumvent the problem. Our architecture integrates mandatory external anchoring.</p>
+        <p><strong>Available building blocks (March 2026):</strong> Milvus (vectorstore), Mercury 2 [10] (linguistic diffusion &lt;1s), SAE/DLM-Scope [17] (semantic fidelity), SuRe [15] (surprise score), SYNAPSE [16] (spreading activation).</p>
+    </div>
+
+    <!-- LIMITATIONS -->
+    <h2>5. Limitations and open questions</h2>
+
+    <div class="box-limitation">
+        <h4>Threshold governance</h4>
+        <p>Who decides that a peer-reviewed study outweighs a user testimonial? How to handle contemporary scientific disagreements? Ethical frameworks for corroboration arbitration remain undefined.</p>
+    </div>
+
+    <div class="box-limitation">
+        <h4>Regulation cost</h4>
+        <p>Offline pattern extraction, criticality computation, and diffusion-based reconstruction involve non-zero cost. Profitability vs. unregulated memory needs empirical validation.</p>
+    </div>
+
+    <div class="box-limitation">
+        <h4>Reconstruction fidelity</h4>
+        <p>Mercury 2 and SAEs are promising, but high-fidelity reconstruction of compressed episodic traces at scale remains to be demonstrated. <span class="tag-hypothesis">[Hypothesis]</span></p>
+    </div>
+
+    <div class="box-limitation">
+        <h4>Distributed storage security</h4>
+        <p>Externalizing memory to user infrastructure introduces integrity risks (corruption, injection). Watermarking and provenance verification [8] are necessary but insufficiently tested in production.</p>
+    </div>
+
+    <!-- IMPACT -->
+    <h2>6. Potential impact</h2>
+    <p>If validated, this architecture would address three active directions in 2026:</p>
+    <ul>
+        <li><strong>Continual Learning</strong> — true online learning without catastrophic forgetting.</li>
+        <li><strong>Privacy-Preserving Agents</strong> — learning from users while forgetting their private data.</li>
+        <li><strong>Energy-Efficient LLMs</strong> — regulated memory = less hallucination = fewer wasted tokens.</li>
+    </ul>
+    <p>The most original contribution: <strong>criticality-weighted elimination metabolism</strong>. The problem it addresses — toxic vector accumulation in long-horizon agents — is real and underexplored.</p>
+
+    <!-- CONCLUSION -->
+    <h2>7. Conclusion</h2>
+    <p>This architecture is not an invention ex nihilo but a <strong>pragmatic synthesis</strong> of 2025–2026 technological building blocks, organized around a central intuition: <em>an intelligent system must manage its memory like a living organism under energy constraints</em>. You don't win at the beginning — you learn to win. And to learn, you must know how to forget what clutters, retain what instructs, and continuously calibrate against external reality.</p>
+    <p>The ambition is not to solve all these problems, but to show that they are coupled and that an integrated architecture — separation, distillation, metabolism — is more promising than isolated solutions.</p>
+
+    <!-- REFERENCES -->
+    <h2>References</h2>
+    <div class="references">
+        <p>[1] Kirkpatrick et al. — "Overcoming catastrophic forgetting in neural networks", PNAS, 2017. <a href="https://www.pnas.org/doi/10.1073/pnas.1611835114">pnas.org</a></p>
+        <p>[2] Shumailov et al. — "AI models collapse when trained on recursively generated data", Nature, 2024.</p>
+        <p>[3] Huang et al. — "Large Language Models Cannot Self-Correct Reasoning Yet", ICLR, 2024.</p>
+        <p>[4] Skierś et al. — "Joint Diffusion Models in Continual Learning (JDCL)", ICCV, 2025. <a href="https://arxiv.org/abs/2411.08224">arxiv.org</a></p>
+        <p>[5] Masip et al. — "Continual Learning of Diffusion Models with Generative Distillation", CoLLAs, 2025. <a href="https://proceedings.mlr.press/v274/masip25a.html">mlr.press</a></p>
+        <p>[6] Van de Ven et al. — "GUIDE: Guidance-based Incremental Learning with Diffusion Models", 2024. <a href="https://arxiv.org/abs/2403.03938">arxiv.org</a></p>
+        <p>[7] Latent Replay for diffusion models, 2025. <a href="https://arxiv.org/abs/2509.10529">arxiv.org</a></p>
+        <p>[8] UC San Diego — Watermarking and model collapse prevention, AI Safety 2025.</p>
+        <p>[9] Kumar et al. — "Training LLMs to Self-Correct via Reinforcement Learning (SCoRe)", Google DeepMind, 2024. <a href="https://arxiv.org/abs/2409.12917">arxiv.org</a></p>
+        <p>[10] Inception Labs — "Mercury 2", 2026. <a href="https://www.inceptionlabs.ai/blog/introducing-mercury-2">inceptionlabs.ai</a></p>
+        <p>[11] DeepSeek AI — "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via RL", 2025.</p>
+        <p>[12] DeepSeek AI — "mHC: Manifold-Constrained Hyper-Connections", 2026.</p>
+        <p>[13] Schmidt, E. — Testimony before the House Committee on Energy and Commerce, 2025.</p>
+        <p>[14] Google — Nested Learning, NeurIPS 2025.</p>
+        <p>[15] SuRe — Surprise-driven Replay, NeurIPS 2025.</p>
+        <p>[16] SYNAPSE — Spreading Activation for LLM Memory, Jan. 2026.</p>
+        <p>[17] DLM-Scope — Semantic fidelity metrics via SAE (Explained Variance + Delta Loss).</p>
+        <p>[18] Chhikara et al. — "Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory", arXiv, Apr. 2025. <a href="https://arxiv.org/abs/2504.19413">arxiv.org</a></p>
+        <p>[19] McGaugh, J.L. — "The amygdala modulates the consolidation of memories of emotionally arousing experiences", Annual Review of Neuroscience, 2004.</p>
+        <p>[20] Kahneman, D. — "Thinking, Fast and Slow", 2011. System 1 / System 2 architecture.</p>
+        <p>[21] Iliff et al. / Nedergaard, M. — "A Paravascular Pathway Facilitates CSF Flow Through the Brain Parenchyma (Glymphatic System)", Science Translational Medicine, 2012.</p>
+    </div>
+
+</div>
+
+    <footer>
+        <p><strong>Document exploratoire — Position paper — Collaboration humain-IA</strong></p>
+        <p>François (Independent Contributor) &amp; Claude (Anthropic) &amp; Gemini (Google DeepMind) &amp; Grok (xAI) &amp; ChatGPT (OpenAI)</p>
+        <p style="margin-top: 10px;">Bienvenue aux critiques, questions et collaborations potentielles.</p>
+    </footer>
+</div>
+
+<script>
+function switchLang(lang) {
+    document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+    document.getElementById(lang).classList.add('active');
+    document.querySelectorAll('.lang-bar button').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.trim() === (lang === 'fr' ? 'Français' : 'English'));
+    });
+}
+</script>
+
+</body>
+</html>
