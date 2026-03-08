@@ -29,6 +29,14 @@ Instead of treating all memories equally, the system assigns a **criticality sco
 
 Memories with higher criticality remain stable in the agent’s working context, while low-criticality memories decay or are filtered.
 
+## Related Research Areas
+
+- Continual learning for LLM agents
+- Agent memory architectures
+- Vector database regulation
+- Long-running autonomous agents
+- Cognitive architectures for AI
+
 ## Potential Benefits
 - reduced accumulation of noise in long conversations
 - improved reasoning stability
