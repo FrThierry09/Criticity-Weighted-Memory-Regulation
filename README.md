@@ -1,6 +1,17 @@
 # Criticity-Weighted Memory Regulation for Long-Running LLM Agents
 Conceptual research proposal on memory regulation for long-running LLM agents.
 
+Architecture overview
+
+LLM
+  ↓
+Latent Memory Index
+  ↓
+External Episodic Storage
+  ↓
+Criticity-Weighted Memory Regulation
+
+
 ## Overview
 Long-running LLM agents tend to accumulate noise, errors, and irrelevant context in memory.  
 Over time this degrades reasoning stability and coherence.
